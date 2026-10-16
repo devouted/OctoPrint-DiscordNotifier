@@ -236,17 +236,34 @@ class DiscordNotifierPlugin(
             baudrate=payload.get("baudrate"),
         )
 
+    # ---- Software Update Hook ----
+
+    def get_update_information(self):
+        """Konfiguracja dla bundled Software Update Plugin OctoPrinta.
+
+        Pozwala aktualizować plugin z poziomu OctoPrinta po opublikowaniu
+        nowego release'u na GitHubie (typ: github_release).
+        """
+        return dict(
+            discord_notifier=dict(
+                displayName="Discord Notifier",
+                displayVersion=self._plugin_version,
+                type="github_release",
+                user="devouted",
+                repo="OctoPrint-DiscordNotifier",
+                current=self._plugin_version,
+                stable_branch=dict(
+                    name="Stable", branch="main", comittish=["main"]
+                ),
+                pip="https://github.com/devouted/OctoPrint-DiscordNotifier/archive/{target_version}.zip",
+            )
+        )
+
 
 __plugin_name__ = "Discord Notifier"
 __plugin_version__ = "0.1.5"
 __plugin_pythoncompat__ = ">=3.7,<4"
 __plugin_implementation__ = DiscordNotifierPlugin()
-
-# Hook aktualizacji przez OctoPrint celowo WYŁĄCZONY, dopóki plugin nie ma
-# realnego repozytorium na GitHubie. Z placeholderami (user="you") OctoPrint
-# odpytywałby nieistniejące repo i logował błąd 404. Aby włączyć aktualizacje
-# OTA, dodaj metodę get_update_information zwracającą poprawne user/repo oraz:
-#   __plugin_hooks__ = {
-#       "octoprint.plugin.softwareupdate.check_config":
-#           __plugin_implementation__.get_update_information
-#   }
+__plugin_hooks__ = {
+    "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+}

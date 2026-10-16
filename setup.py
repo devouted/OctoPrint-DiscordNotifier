@@ -19,9 +19,9 @@ plugin_package = "octoprint_discord_notifier"
 plugin_name = "OctoPrint-DiscordNotifier"
 plugin_version = "0.1.5"
 plugin_description = "Print notifications to Discord via webhook, with webcam snapshot."
-plugin_author = "you"
-plugin_author_email = "you@example.com"
-plugin_url = "https://github.com/you/OctoPrint-DiscordNotifier"
+plugin_author = "Marcin Sadowski"
+plugin_author_email = "msdevouted@gmail.com"
+plugin_url = "https://github.com/devouted/OctoPrint-DiscordNotifier"
 plugin_license = "AGPLv3"
 
 setup(
