@@ -1,165 +1,151 @@
 # OctoPrint-DiscordNotifier
 
-Plugin OctoPrint, który wysyła powiadomienia o druku bezpośrednio na kanał
-Discord przez **webhook** — bez pośredniczącego skryptu/przelotki.
+An OctoPrint plugin that sends print notifications directly to a Discord
+channel via **webhook** — no intermediate relay script required.
 
-> Interfejs pluginu (panel ustawień, powiadomienia na Discordzie) jest
-> w języku **angielskim**. Niniejszy README jest po polsku jako dokumentacja
-> deweloperska.
+## Features
 
-## Funkcje
-
-- Konfiguracja **URL webhooka** Discord w panelu ustawień.
-- **Checkboxy** wyboru zdarzeń, pod które plugin ma reagować:
+- Configure the Discord **webhook URL** in the settings panel.
+- **Checkboxes** to select which events trigger a notification:
   - Print started / Print done / Print failed
   - Paused / Resumed / Cancelled
   - Printer connected / Printer disconnected
-- **Snapshot z kamery** — powiadomienia (oraz test) mogą dołączać obraz
-  z kamery skonfigurowanej w OctoPrint. Obraz jest wysyłany jako załącznik
-  (`multipart`), bez potrzeby hostowania go na zewnątrz.
-- **Limit powiadomień (throttle)** — konfigurowalny odstęp (domyślnie 10 s),
-  który zapobiega serii identycznych powiadomień (np. przy migotaniu portu
-  szeregowego drukarki). `0` wyłącza limit.
-- Przycisk **„Send test"** — wysyła przykładowe powiadomienie wraz z obrazem
-  z kamery (jeśli skonfigurowana). Test nie podlega throttle.
-- Ładne embedy z kolorem per typ zdarzenia, paskiem postępu, czasami oraz
-  portem/baudrate (dla zdarzenia połączenia).
+- **Webcam snapshot** — notifications (and the test) can attach an image from
+  the webcam configured in OctoPrint. The image is sent as an attachment
+  (`multipart`), with no need to host it externally.
+- **Notification limit (throttle)** — a configurable interval (default 10 s)
+  that prevents a burst of identical notifications (e.g. when the printer's
+  serial port flaps). `0` disables the limit.
+- **"Send test"** button — sends a sample notification together with a webcam
+  image (if configured). The test is not subject to throttling.
+- Rich embeds with a per-event-type color, a progress bar, timestamps and
+  port/baudrate (for the connection event).
 
-## Architektura
+## Architecture
 
-Projekt jest celowo podzielony na dwie części, aby logika Discorda była
-niezależna od OctoPrinta i w pełni testowalna:
+The project is deliberately split into two parts so the Discord logic stays
+independent of OctoPrint and fully testable:
 
-- **`octoprint_discord/`** — czysta biblioteka (bez zależności od OctoPrinta):
-  - `discord_client.py` — klient webhooka (JSON + multipart, retry na 429,
-    akceptacja odpowiedzi 2xx, limity i obcinanie pól).
-  - `notifications.py` — budowanie wiadomości/embedów dla typów zdarzeń.
-  - `snapshot.py` — pobieranie obrazu ze snapshot URL kamery.
-  - `events.py` — mapowanie nazw zdarzeń OctoPrint na typy wewnętrzne,
-    domyślne wartości checkboxów i etykiety.
-  - `throttle.py` — deduplikacja/throttle powiadomień per typ zdarzenia.
-  - `cli.py` — lokalne CLI do testów bez OctoPrinta.
-- **`octoprint_discord_notifier/`** — właściwy plugin OctoPrint:
-  - `__init__.py` — mixiny (Settings, EventHandler, SimpleApi, Template,
-    Asset), mapowanie zdarzeń, API przycisku testu, pobieranie snapshotu.
-  - `templates/discord_notifier_settings.jinja2` — panel ustawień.
-  - `static/js/discord_notifier.js` — view model (przycisk testu).
+- **`octoprint_discord/`** — a pure library (no OctoPrint dependency):
+  - `discord_client.py` — webhook client (JSON + multipart, retry on 429,
+    accepts any 2xx response, field limits and truncation).
+  - `notifications.py` — builds messages/embeds for each event type.
+  - `snapshot.py` — fetches the image from the webcam snapshot URL.
+  - `events.py` — maps OctoPrint event names to internal types, default
+    checkbox values and labels.
+  - `throttle.py` — deduplication/throttling of notifications per event type.
+  - `cli.py` — local CLI for testing without OctoPrint.
+- **`octoprint_discord_notifier/`** — the actual OctoPrint plugin:
+  - `__init__.py` — mixins (Settings, EventHandler, SimpleApi, Template,
+    Asset), event mapping, test-button API, snapshot fetching.
+  - `templates/discord_notifier_settings.jinja2` — settings panel.
+  - `static/js/discord_notifier.js` — view model (test button).
 
-## Wymagania
+## Requirements
 
-- OctoPrint (testowane na 1.11.x, Python 3.12; deklarowana zgodność `>=3.7,<4`).
-- Zależność runtime: `requests`.
+- OctoPrint (tested on 1.11.x, Python 3.12; declared compatibility `>=3.7,<4`).
+- Runtime dependency: `requests`.
 
-## Instalacja
+## Installation
 
-Najprościej przez **Plugin Manager** w OctoPrincie:
+The easiest way is via the **Plugin Manager** in OctoPrint:
 
-1. *Settings → Plugin Manager → Get More… → „… from an uploaded archive"*.
-2. Wskaż plik `dist/octoprint_discordnotifier-<wersja>.tar.gz`.
-3. Zainstaluj i zrestartuj OctoPrint.
+1. *Settings → Plugin Manager → Get More… → "… from an uploaded archive"*.
+2. Select the file `dist/octoprint_discordnotifier-<version>.tar.gz`.
+3. Install and restart OctoPrint.
 
-Alternatywnie z linii poleceń, w aktywnym venv OctoPrinta:
+Alternatively, from the command line in OctoPrint's active venv:
 
 ```bash
-pip install dist/octoprint_discordnotifier-<wersja>.tar.gz
+pip install dist/octoprint_discordnotifier-<version>.tar.gz
 ```
 
-> Uwaga: `setup.py` celowo **nie** zależy od `octoprint_setuptools`, dzięki
-> czemu build działa też w izolowanym środowisku pip (jak w Plugin Managerze).
-> OctoPrint **nie** jest wpisany w `install_requires`, aby pip nie próbował go
-> przebudowywać.
+> Note: `setup.py` intentionally does **not** depend on `octoprint_setuptools`,
+> so the build also works in an isolated pip environment (like the Plugin
+> Manager uses). OctoPrint is **not** listed in `install_requires`, so pip does
+> not try to rebuild it.
 
-## Konfiguracja
+## Configuration
 
-1. W Discordzie: *ustawienia kanału → Integracje → Webhooki → Kopiuj URL webhooka*.
-2. W OctoPrincie: *Settings → Discord Notifier* → wklej URL w polu **Webhook URL**.
-3. Zaznacz zdarzenia (checkboxy), ustaw opcjonalnie **username** i **limit
-   powiadomień**, zapisz.
-4. (Opcjonalnie) skonfiguruj snapshot URL kamery w *Settings → Webcam &
-   Timelapse*, aby test i powiadomienia dołączały obraz; zaznacz
-   **„Attach webcam image"**.
-5. Kliknij **Send test**, aby zweryfikować konfigurację.
+1. In Discord: *channel settings → Integrations → Webhooks → Copy Webhook URL*.
+2. In OctoPrint: *Settings → Discord Notifier* → paste the URL into the
+   **Webhook URL** field.
+3. Select events (checkboxes), optionally set a **username** and the
+   **notification limit**, then save.
+4. (Optional) configure the webcam snapshot URL in *Settings → Webcam &
+   Timelapse* so the test and notifications attach an image; enable
+   **"Attach webcam image"**.
+5. Click **Send test** to verify the configuration.
 
-### Ustawienia
+### Settings
 
-| Ustawienie | Opis | Domyślnie |
+| Setting | Description | Default |
 |---|---|---|
-| `webhook_url` | URL webhooka Discord | (puste) |
-| `username` | Nazwa autora wiadomości na Discordzie | `OctoPrint` |
-| `send_snapshot` | Dołączaj obraz z kamery do powiadomień | `true` |
-| `throttle_seconds` | Min. odstęp między powiadomieniami tego samego typu; `0` = wyłączony | `10` |
-| `event_PrintStarted` | Powiadomienie o rozpoczęciu druku | `true` |
-| `event_PrintDone` | Powiadomienie o zakończeniu druku | `true` |
-| `event_PrintFailed` | Powiadomienie o błędzie druku | `true` |
-| `event_PrintPaused` | Powiadomienie o wstrzymaniu | `false` |
-| `event_PrintResumed` | Powiadomienie o wznowieniu | `false` |
-| `event_PrintCancelled` | Powiadomienie o anulowaniu | `true` |
-| `event_Connected` | Powiadomienie o podłączeniu drukarki | `false` |
-| `event_Disconnected` | Powiadomienie o odłączeniu drukarki | `false` |
+| `webhook_url` | Discord webhook URL | (empty) |
+| `username` | Message author name shown on Discord | `OctoPrint` |
+| `send_snapshot` | Attach a webcam image to notifications | `true` |
+| `throttle_seconds` | Min. interval between notifications of the same type; `0` = disabled | `10` |
+| `event_PrintStarted` | Notify on print start | `true` |
+| `event_PrintDone` | Notify on print completion | `true` |
+| `event_PrintFailed` | Notify on print failure | `true` |
+| `event_PrintPaused` | Notify on pause | `false` |
+| `event_PrintResumed` | Notify on resume | `false` |
+| `event_PrintCancelled` | Notify on cancellation | `true` |
+| `event_Connected` | Notify when the printer connects | `false` |
+| `event_Disconnected` | Notify when the printer disconnects | `false` |
 
-## Lokalne testy bez OctoPrinta (CLI)
+## Local testing without OctoPrint (CLI)
 
-Biblioteka `octoprint_discord` działa samodzielnie. Podgląd payloadu bez wysyłki:
+The `octoprint_discord` library works standalone. Preview the payload without
+sending:
 
 ```bash
 python -m octoprint_discord.cli -e done --filename benchy.gcode --elapsed 3661 --dry-run
 ```
 
-Realna wysyłka na kanał (webhook z ENV lub `-w`):
+Actually send to a channel (webhook from ENV or `-w`):
 
 ```bash
 export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 python -m octoprint_discord.cli -e done --filename benchy.gcode --elapsed 3661
-# ze snapshotem i wzmianką:
+# with a snapshot and a mention:
 python -m octoprint_discord.cli -e failed --snapshot ./snap.png --mention '@here'
 ```
 
-Dostępne typy zdarzeń (`-e`): `started`, `done`, `failed`, `paused`, `resumed`,
+Available event types (`-e`): `started`, `done`, `failed`, `paused`, `resumed`,
 `progress`, `cancelled`, `connected`, `disconnected`.
 
-## Rozwój i testy
+## Development and tests
 
-Testy jednostkowe i integracyjne (HTTP mockowany, bez realnej sieci):
+Unit and integration tests (HTTP mocked, no real network):
 
 ```bash
 python -m pytest
 ```
 
-Budowanie paczki (sdist + wheel):
+Building the package (sdist + wheel):
 
 ```bash
 python setup.py sdist bdist_wheel
-# artefakty w dist/
+# artifacts in dist/
 ```
 
-## Uwagi techniczne
+## Notes
 
-- **Odpowiedzi Discorda:** webhook zwraca `204 No Content` dla zwykłego POST
-  oraz `200 OK` (z obiektem wiadomości) przy wysyłce z załącznikiem. Klient
-  traktuje cały zakres `2xx` jako sukces.
-- **Snapshot z kamery:** plugin preferuje system kamer wprowadzony w
-  OctoPrint 1.9 (`octoprint.webcams.get_snapshot_webcam`), z fallbackiem na
-  starszy odczyt ustawień dla wcześniejszych wersji.
-- **Bezpieczeństwo API:** endpoint testu jest chroniony i tylko dla admina
-  (`is_api_protected`, `is_api_adminonly`); webhook URL jest oznaczony jako
-  ustawienie wrażliwe.
+- **Webcam snapshot:** uses the snapshot URL from OctoPrint's webcam
+  configuration (supports the webcam system introduced in OctoPrint 1.9).
+- **API security:** the test endpoint is protected and admin-only; the webhook
+  URL is stored as a sensitive setting and never exposed to non-admin clients.
+- The plugin only talks to the Discord webhook you configure; if Discord is
+  unreachable it fails gracefully without disrupting OctoPrint.
 
-## Status rejestracji w repozytorium pluginów
+## AI-assisted development
 
-Plugin przygotowywany jest do zgłoszenia do oficjalnego OctoPrint Plugin
-Repository. Wykonane już kroki: realne metadane w `setup.py`, pełny tekst
-licencji AGPLv3, włączony hook aktualizacji
-(`octoprint.plugin.softwareupdate.check_config`, typ `github_release`).
-Do zgłoszenia pozostaje m.in. utworzenie pliku rejestracyjnego
-`_plugins/discord_notifier.md` z atrybutem `ai-developed` oraz screenshotami.
+This plugin was built with the help of **AI — Kiro (kiro-dev)**. In line with
+the OctoPrint Plugin Repository guidelines, it is marked with the
+`ai-developed` attribute. The author (maintainer) is responsible for
+maintenance, bug fixes and compatibility with future OctoPrint versions.
 
-## Rozwój z pomocą AI
-
-Ten plugin został zbudowany z pomocą **AI — Kiro (kiro-dev)**. Zgodnie z
-wytycznymi OctoPrint Plugin Repository, w zgłoszeniu rejestracyjnym plugin
-jest/zostanie oznaczony atrybutem `ai-developed`. Autor (maintainer) odpowiada
-za utrzymanie, poprawki błędów i zgodność z kolejnymi wersjami OctoPrinta.
-
-## Licencja
+## License
 
 AGPLv3.
