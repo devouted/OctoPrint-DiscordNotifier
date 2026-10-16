@@ -25,11 +25,11 @@ screenshots:
 - url: /assets/img/plugins/discord_notifier/settings.png
   alt: Discord Notifier settings panel
   caption: Settings panel — webhook URL, event checkboxes, snapshot and notification limit
-- url: /assets/img/plugins/discord_notifier/notification.png
+- url: /assets/img/plugins/discord_notifier/notifications.png
   alt: Example notification on Discord
   caption: Example print notification on Discord with a webcam snapshot
 
-featuredimage: /assets/img/plugins/discord_notifier/notification.png
+featuredimage: /assets/img/plugins/discord_notifier/notifications.png
 
 compatibility:
   octoprint:
