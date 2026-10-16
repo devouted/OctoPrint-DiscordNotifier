@@ -1,0 +1,116 @@
+<div class="discord-notifier-settings">
+    <h3>Discord Notifier</h3>
+    <p class="muted">Sends print notifications directly to a Discord channel via webhook.</p>
+
+    <form class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label">Webhook URL</label>
+            <div class="controls">
+                <input type="text" class="input-block-level"
+                       placeholder="https://discord.com/api/webhooks/..."
+                       data-bind="value: settingsViewModel.settings.plugins.discord_notifier.webhook_url">
+                <span class="help-block">
+                    Discord → channel settings → Integrations → Webhooks → Copy Webhook URL.
+                </span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Username</label>
+            <div class="controls">
+                <input type="text" class="input-block-level"
+                       data-bind="value: settingsViewModel.settings.plugins.discord_notifier.username">
+                <span class="help-block">Name shown as the author of the message on Discord.</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Events</label>
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintStarted">
+                    Print started
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintDone">
+                    Print done
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintFailed">
+                    Print failed
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintPaused">
+                    Paused
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintResumed">
+                    Resumed
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_PrintCancelled">
+                    Cancelled
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_Connected">
+                    Printer connected
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.event_Disconnected">
+                    Printer disconnected
+                </label>
+                <span class="help-block">Select which print events should trigger a notification.</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Snapshot</label>
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox"
+                           data-bind="checked: settingsViewModel.settings.plugins.discord_notifier.send_snapshot">
+                    Attach webcam image
+                </label>
+                <span class="help-block">
+                    Uses the snapshot URL configured in OctoPrint (Settings → Webcam &amp; Timelapse).
+                </span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Notification limit</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" step="1" class="input-mini"
+                           data-bind="value: settingsViewModel.settings.plugins.discord_notifier.throttle_seconds">
+                    <span class="add-on">s</span>
+                </div>
+                <span class="help-block">
+                    Do not send the same event type more often than every this many seconds
+                    (protects against bursts of notifications, e.g. due to printer port issues).
+                    Set <strong>0</strong> to disable the limit.
+                </span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn" type="button"
+                        data-bind="click: testNotification, enable: !testing()">
+                    <i class="fa fa-paper-plane"></i>
+                    <span data-bind="text: testing() ? 'Sending...' : 'Send test'"></span>
+                </button>
+                <span data-bind="visible: testResult() === 'ok'" class="text-success" style="margin-left:10px;">
+                    <i class="fa fa-check"></i> Sent!
+                </span>
+                <span data-bind="visible: testResult() === 'error'" class="text-error" style="margin-left:10px;">
+                    <i class="fa fa-times"></i> <span data-bind="text: testError"></span>
+                </span>
+                <span class="help-block">
+                    The test sends a sample notification together with a webcam image (if configured).
+                    Save the settings first so the test uses the current webhook.
+                </span>
+            </div>
+        </div>
+    </form>
+</div>

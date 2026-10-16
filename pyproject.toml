@@ -1,0 +1,10 @@
+# Build pluginu: zwykły setuptools (setup.py). setup.py NIE zależy od
+# octoprint_setuptools, więc build działa też w izolowanym środowisku pip
+# (tak buduje OctoPrint Plugin Manager). Konfiguracja pytest poniżej.
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

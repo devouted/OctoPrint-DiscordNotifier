@@ -1,0 +1,4 @@
+recursive-include octoprint_discord_notifier/templates *
+recursive-include octoprint_discord_notifier/static *
+include README.md
+include requirements.txt
