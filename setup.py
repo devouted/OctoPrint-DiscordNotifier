@@ -17,7 +17,7 @@ from setuptools import setup
 plugin_identifier = "discord_notifier"
 plugin_package = "octoprint_discord_notifier"
 plugin_name = "OctoPrint-DiscordNotifier"
-plugin_version = "0.1.5"
+plugin_version = "1.0.0"
 plugin_description = "Print notifications to Discord via webhook, with webcam snapshot."
 plugin_author = "Marcin Sadowski"
 plugin_author_email = "msdevouted@gmail.com"

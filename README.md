@@ -146,13 +146,19 @@ python setup.py sdist bdist_wheel
 
 ## Status rejestracji w repozytorium pluginów
 
-Plugin **nie jest** zarejestrowany w oficjalnym OctoPrint Plugin Repository.
-Przed ewentualną rejestracją należy m.in.:
+Plugin przygotowywany jest do zgłoszenia do oficjalnego OctoPrint Plugin
+Repository. Wykonane już kroki: realne metadane w `setup.py`, pełny tekst
+licencji AGPLv3, włączony hook aktualizacji
+(`octoprint.plugin.softwareupdate.check_config`, typ `github_release`).
+Do zgłoszenia pozostaje m.in. utworzenie pliku rejestracyjnego
+`_plugins/discord_notifier.md` z atrybutem `ai-developed` oraz screenshotami.
 
-- uzupełnić realne `user`/`repo`/`author` w `setup.py` i (opcjonalnie) włączyć
-  hook aktualizacji (`octoprint.plugin.softwareupdate.check_config`),
-- utworzyć plik rejestracyjny `_plugins/discord_notifier.md` z atrybutem
-  `ai-developed` (plugin powstał z pomocą AI) oraz screenshotami.
+## Rozwój z pomocą AI
+
+Ten plugin został zbudowany z pomocą **AI — Kiro (kiro-dev)**. Zgodnie z
+wytycznymi OctoPrint Plugin Repository, w zgłoszeniu rejestracyjnym plugin
+jest/zostanie oznaczony atrybutem `ai-developed`. Autor (maintainer) odpowiada
+za utrzymanie, poprawki błędów i zgodność z kolejnymi wersjami OctoPrinta.
 
 ## Licencja
 
